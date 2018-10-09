@@ -91,7 +91,7 @@ class Node:
 		index = int(np.log2(node_id ^ origin_id))
 
 		# HACK filters out all None elements - no neighbors at that distance
-		return filter(None, self.neighbors[:index])
+		return list(filter(None, self.neighbors[:index]))
 
 
 	def join(self):
