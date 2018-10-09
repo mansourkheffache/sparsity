@@ -164,7 +164,7 @@ if __name__ == "__main__":
 
 	# start XML-RPC server
 	with SimpleXMLRPCServer(('localhost', 8000), use_builtin_types=True) as server:
-		server.register_instance(Node(20, 10, 8, 5, 'lul'))
+		server.register_instance(Node(20, 30, 20, 5, 'lul'))
 		print('Node running on localhost port 8000')
 		try:
 			server.serve_forever()
