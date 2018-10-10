@@ -10,8 +10,15 @@ from threading import Thread
 import socket
 import uuid
 
+# HACK
+import time
+
 # TODO side stuff to move to utils.py
 # just threads, but join() has a return value -- useful for this use case
+
+PORT = np.random.randint(1420, 4420)
+ADDRESS = '127.0.0.1'
+
 class BThread(Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, *, daemon=None):
         Thread.__init__(self, group, target, name, args, kwargs, daemon=daemon)
@@ -51,6 +58,11 @@ class Node:
 		# tmp fix without tracker
 		self.neighbors = []
 		self.id = uuid.uuid4().hex[:5]
+		self.ip = ADDRESS
+		self.port = PORT
+
+		# connect to tracker
+		self.join()
 
 
 	def _set(self, data):
@@ -69,7 +81,6 @@ class Node:
 
 
 	def _get(self, address):
-
 
 		# get matching locations
 		distances = np.count_nonzero(np.array(address, dtype=int) != self.addresses, axis=1)
@@ -94,78 +105,129 @@ class Node:
 		return list(filter(None, self.neighbors[:index]))
 
 
+	def hello(self, peer_details):
+		print('HELLO')
+
+		index = int(np.log2(int(self.id, 16) ^ int(peer_details['id'], 16)))
+
+		self.neighbors[index] = peer_details
+
+		return index
+
+
 	def join(self):
-
 		with xmlrpc.client.ServerProxy('http://' + self.tracker + '/') as proxy:
+			self.id, self.neighbors = proxy.register(self.ip, self.port)
 
-			self.id, self.neighbors = proxy.register(get_ip_address, 4420)
+		peer_details = { 'id': self.id, 'ip': self.ip, 'port': self.port }
+		print('PEER ID: ' + self.id)
+		for n in filter(None, self.neighbors):
+			with xmlrpc.client.ServerProxy('http://' + n['ip'] + ':' + str(n['port']) + '/') as proxy:
+				index = proxy.hello(peer_details)
+
+				# TODO compare index to make sure it was insert in the right place
 
 
 	def store(self, data, origin):
+		print('STORE  --  ' + origin)
 
-		threads = []
+
+		# !!! MULTI-THREADED !!!
+		# threads = []
+		# count = 0
+
+		# # local
+		# t = BThread(target=self._set, args=(data,))
+		# threads.append(t)
+		# t.start()
+
+		# # remote
+		# for r in self._get_recipients(origin):
+		# 	with xmlrpc.client.ServerProxy('http://' + r['ip'] + ':' + str(r['port']) + '/') as proxy:
+		# 		t = BThread(target=proxy.store, args=(data, self.id))
+		# 		threads.append(t)
+		# 		t.start()
+
+		# # print(len(threads))
+
+		# # TODO do you need string encode/decode??
+		# # wait
+		# for t in threads:
+		# 	count += t.join()
+
+		# return count
+
+
 		count = 0
 
 		# local
-		t = BThread(target=self._set, args=(data,))
-		threads.append(t)
-		t.start()
+		count += self._set(data)
 
 		# remote
 		for r in self._get_recipients(origin):
-			with xmlrpc.client.ServerProxy('http://' + r['ip'] + ':' + r['port'] + '/') as proxy:
-				t = BThread(target=proxy.store, args=(data, self.id))
-				threads.append(t)
-				t.start()
-
-		# TODO do you need string encode/decode??
-		# wait
-		for t in threads:
-			count += t.join()
+			with xmlrpc.client.ServerProxy('http://' + r['ip'] + ':' + str(r['port']) + '/') as proxy:
+				count += proxy.store(data, self.id)
 
 		return count
 
 
 	def retrieve(self, address, origin):
+		print('RETRIEVE  --  ' + origin)
 
-		threads = []
+		# !!! MULTI-THREADED !!!
+		# threads = []
+		# v = np.zeros(self.X, dtype=int)
+
+		# # local
+		# t = BThread(target=self._get, args=(address,))
+		# threads.append(t)
+		# t.start()
+
+		# # remote
+		# for r in self._get_recipients(origin):
+		# 	with xmlrpc.client.ServerProxy('http://' + r['ip'] + ':' + str(r['port']) + '/') as proxy:
+		# 		t = BThread(target=proxy.retrieve, args=(address, self.id))
+		# 		threads.append(t)
+		# 		t.start()
+
+
+
+		# # TODO do you need string encode/decode??
+		# # Nej
+
+		# # wait
+		# for t in threads:
+		# 	v += t.join()
+
+		# return v.tolist()
+
 		v = np.zeros(self.X, dtype=int)
 
 		# local
-		t = BThread(target=self._get, args=(address,))
-		threads.append(t)
-		t.start()
+		v += self._get(address)
 
 		# remote
 		for r in self._get_recipients(origin):
-			with xmlrpc.client.ServerProxy('http://' + r['ip'] + ':' + r['port'] + '/') as proxy:
-				t = BThread(target=proxy.retrieve, args=(address, self.id))
-				threads.append(t)
-				t.start()
-
-
-
-		# TODO do you need string encode/decode??
-		# Nej
-
-		# wait
-		for t in threads:
-			v += t.join()
+			with xmlrpc.client.ServerProxy('http://' + r['ip'] + ':' + str(r['port']) + '/') as proxy:
+				v += np.array(proxy.retrieve(address, self.id), dtype=int)
 
 		return v.tolist()
+
 
 	def print_info(self):
 		print(self.addresses)
 		print(self.bins)
+
+		return 0
 
 
 
 if __name__ == "__main__":
 
 	# start XML-RPC server
-	with SimpleXMLRPCServer(('localhost', 8000), use_builtin_types=True) as server:
-		server.register_instance(Node(20, 30, 20, 5, 'lul'))
-		print('Node running on localhost port 8000')
+	with SimpleXMLRPCServer(('localhost', PORT), use_builtin_types=True, allow_none=True) as server:
+		server.register_instance(Node(20, 10, 10, 5, 'localhost:8000'))
+		print('Node running on localhost port ' + str(PORT))
 		try:
 			server.serve_forever()
 		except KeyboardInterrupt:
