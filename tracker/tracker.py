@@ -1,7 +1,10 @@
+#!/usr/bin/python3
+
 
 import uuid
 import numpy as np
 from xmlrpc.server import SimpleXMLRPCServer
+import sys
 
 class Tracker():
 	# TODO watch for ids with trailing 0's
@@ -22,6 +25,8 @@ class Tracker():
 
 		# add to list of active peers
 		self.active_peers[hex_id] = peer_details
+
+		print(peer_details)
 
 		return hex_id, neighbors
 
@@ -45,3 +50,20 @@ class Tracker():
 				neighbors[i] = None
 
 		return neighbors
+
+	def get_active_peers(self):
+		return self.active_peers
+
+
+
+if __name__ == "__main__":
+
+	# start XML-RPC server
+	with SimpleXMLRPCServer(('localhost', 8000), use_builtin_types=True, allow_none=True) as server:
+		server.register_instance(Tracker(20))
+		print('Tracker running on localhost port 8000')
+		try:
+			server.serve_forever()
+		except KeyboardInterrupt:
+			print("\nKeyboard interrupt received, exiting.")
+			sys.exit(0)
