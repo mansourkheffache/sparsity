@@ -224,11 +224,12 @@ class Node:
 if __name__ == "__main__":
 
 	# start XML-RPC server
-	with SimpleXMLRPCServer(('localhost', PORT), use_builtin_types=True, allow_none=True) as server:
-		server.register_instance(Node('localhost:8000'))
-		print('Node running on localhost port ' + str(PORT))
-		try:
-			server.serve_forever()
-		except KeyboardInterrupt:
-			print("\nKeyboard interrupt received, exiting.")
-			sys.exit(0)
+	server = SimpleXMLRPCServer(('localhost', PORT), use_builtin_types=True, allow_none=True)
+
+	server.register_instance(Node('localhost:8000'))
+	print('Node running on localhost port ' + str(PORT))
+	try:
+		server.serve_forever()
+	except KeyboardInterrupt:
+		print("\nKeyboard interrupt received, exiting.")
+		sys.exit(0)

@@ -61,11 +61,12 @@ class Tracker():
 if __name__ == "__main__":
 
 	# start XML-RPC server
-	with SimpleXMLRPCServer(('localhost', 8000), use_builtin_types=True, allow_none=True) as server:
-		server.register_instance(Tracker(20, 32, 20, 16, 5))
-		print('Tracker running on localhost port 8000')
-		try:
-			server.serve_forever()
-		except KeyboardInterrupt:
-			print("\nKeyboard interrupt received, exiting.")
-			sys.exit(0)
+	server = SimpleXMLRPCServer(('localhost', 8000), use_builtin_types=True, allow_none=True)
+
+	server.register_instance(Tracker(20, 32, 20, 16, 5))
+	print('Tracker running on localhost port 8000')
+	try:
+		server.serve_forever()
+	except KeyboardInterrupt:
+		print("\nKeyboard interrupt received, exiting.")
+		sys.exit(0)
