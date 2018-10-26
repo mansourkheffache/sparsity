@@ -19,6 +19,7 @@ import time
 PORT = np.random.randint(1420, 4420)
 ADDRESS = '127.0.0.1'
 
+# class used for multi-threading, might be neeed later
 class BThread(Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, *, daemon=None):
         Thread.__init__(self, group, target, name, args, kwargs, daemon=daemon)
@@ -42,40 +43,38 @@ def get_ip_address():
 
 class Node:
 
-	def __init__(self, X, N, T, C, tracker):
+	def __init__(self, tracker):
 		# X:	dimensionality
 		# N:	number of addresses
 		# T:	threshold
 		# C:	bounds
 
-		self.X = X
-		self.bins = np.zeros((N, X), dtype=int)
-		self.threshold = T
-		self.addresses = np.random.randint(2, size=(N, X))
-		self.bounds = C
-		self.tracker = tracker
 
 		# tmp fix without tracker
-		self.neighbors = []
-		self.id = uuid.uuid4().hex[:5]
+		# self.neighbors = []
+		# self.id = uuid.uuid4().hex[:5]
 		self.ip = ADDRESS
 		self.port = PORT
+		self.tracker = tracker
 
 		# connect to tracker
 		self.join()
+
+		# init
+		self.bins = np.zeros((self.params['N'], self.params['X']), dtype=int)
+		self.addresses = np.random.randint(2, size=(self.params['N'], self.params['X']))
 
 
 	def _set(self, data):
 		# get matching locations
 		distances = np.count_nonzero(np.array(data, dtype=int) != self.addresses, axis=1)
-		locations = np.where(distances <= self.threshold)[0]
+		locations = np.where(distances <= self.params['T'])[0]
 
 		# store data into designated locations	
 		bipolar_data = np.array(data, dtype=int) * 2 - 1
 		self.bins[locations] += bipolar_data
-		self.bins[self.bins < -self.bounds] = -self.bounds
-		self.bins[self.bins > self.bounds] = self.bounds
-
+		self.bins[self.bins < -self.params['C']] = -self.params['C']
+		self.bins[self.bins > self.params['C']] = self.params['C']
 
 		return len(locations)
 
@@ -84,7 +83,7 @@ class Node:
 
 		# get matching locations
 		distances = np.count_nonzero(np.array(address, dtype=int) != self.addresses, axis=1)
-		locations = np.where(distances <= self.threshold)
+		locations = np.where(distances <= self.params['T'])
 
 		# get sum of bins
 		v = np.sum(self.bins[locations], axis=0)
@@ -106,7 +105,7 @@ class Node:
 
 
 	def hello(self, peer_details):
-		print('HELLO')
+		print('HELLO  --  ' + peer_details['id'])
 
 		index = int(np.log2(int(self.id, 16) ^ int(peer_details['id'], 16)))
 
@@ -117,7 +116,7 @@ class Node:
 
 	def join(self):
 		with xmlrpc.client.ServerProxy('http://' + self.tracker + '/') as proxy:
-			self.id, self.neighbors = proxy.register(self.ip, self.port)
+			self.id, self.neighbors, self.params = proxy.register(self.ip, self.port)
 
 		peer_details = { 'id': self.id, 'ip': self.ip, 'port': self.port }
 		print('PEER ID: ' + self.id)
@@ -125,7 +124,7 @@ class Node:
 			with xmlrpc.client.ServerProxy('http://' + n['ip'] + ':' + str(n['port']) + '/') as proxy:
 				index = proxy.hello(peer_details)
 
-				# TODO compare index to make sure it was insert in the right place
+				# TODO compare index to make sure it was inserted in the right place, maybe?
 
 
 	def store(self, data, origin):
@@ -201,7 +200,7 @@ class Node:
 
 		# return v.tolist()
 
-		v = np.zeros(self.X, dtype=int)
+		v = np.zeros(self.params['X'], dtype=int)
 
 		# local
 		v += self._get(address)
@@ -226,7 +225,7 @@ if __name__ == "__main__":
 
 	# start XML-RPC server
 	with SimpleXMLRPCServer(('localhost', PORT), use_builtin_types=True, allow_none=True) as server:
-		server.register_instance(Node(20, 10, 10, 5, 'localhost:8000'))
+		server.register_instance(Node('localhost:8000'))
 		print('Node running on localhost port ' + str(PORT))
 		try:
 			server.serve_forever()

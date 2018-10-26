@@ -10,9 +10,11 @@ class Tracker():
 	# TODO watch for ids with trailing 0's
 
 
-	def __init__(self, space):
+	def __init__(self, addr_space, X, N, T, C):
 		self.active_peers = {}
-		self.space = space
+		# TODO space is different from X
+		self.space = addr_space
+		self.params = { 'X': X, 'N': N, 'T': T, 'C': C}
 
 	def register(self, ip, port):
 
@@ -28,7 +30,7 @@ class Tracker():
 
 		print(peer_details)
 
-		return hex_id, neighbors
+		return hex_id, neighbors, self.params
 
 	def get_neighbors(self, id):
 
@@ -60,7 +62,7 @@ if __name__ == "__main__":
 
 	# start XML-RPC server
 	with SimpleXMLRPCServer(('localhost', 8000), use_builtin_types=True, allow_none=True) as server:
-		server.register_instance(Tracker(20))
+		server.register_instance(Tracker(20, 32, 20, 16, 5))
 		print('Tracker running on localhost port 8000')
 		try:
 			server.serve_forever()
