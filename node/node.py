@@ -16,9 +16,6 @@ import time
 # TODO side stuff to move to utils.py
 # just threads, but join() has a return value -- useful for this use case
 
-PORT = np.random.randint(1420, 4420)
-ADDRESS = '127.0.0.1'
-
 # class used for multi-threading, might be neeed later
 class BThread(Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, *, daemon=None):
@@ -34,16 +31,28 @@ class BThread(Thread):
         Thread.join(self)
         return self._return
 
-def get_ip_address():
+# GET IP ADDRESS
+import socket
+def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # TODO change 8.8.8.8 with tracker ??
-    s.connect(('8.8.8.8', 80))
-    return s.getsockname()[0]
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
+
+
+
+
 
 
 class Node:
 
-	def __init__(self, tracker):
+	def __init__(self, address, port, tracker):
 		# X:	dimensionality
 		# N:	number of addresses
 		# T:	threshold
@@ -53,8 +62,8 @@ class Node:
 		# tmp fix without tracker
 		# self.neighbors = []
 		# self.id = uuid.uuid4().hex[:5]
-		self.ip = ADDRESS
-		self.port = PORT
+		self.ip = address
+		self.port = port
 		self.tracker = tracker
 
 		# connect to tracker
@@ -105,7 +114,7 @@ class Node:
 
 
 	def hello(self, peer_details):
-		print('HELLO  --  ' + peer_details['id'])
+		print('[' + self.id + '] HELLO  --  ' + peer_details['id'])
 
 		index = int(np.log2(int(self.id, 16) ^ int(peer_details['id'], 16)))
 
@@ -128,7 +137,7 @@ class Node:
 
 
 	def store(self, data, origin):
-		print('STORE  --  ' + origin)
+		print('[' + self.id + '] STORE  --  ' + origin)
 
 
 		# !!! MULTI-THREADED !!!
@@ -171,7 +180,7 @@ class Node:
 
 
 	def retrieve(self, address, origin):
-		print('RETRIEVE  --  ' + origin)
+		print('[' + self.id + '] RETRIEVE  --  ' + origin)
 
 		# !!! MULTI-THREADED !!!
 		# threads = []
@@ -223,10 +232,15 @@ class Node:
 
 if __name__ == "__main__":
 
-	# start XML-RPC server
-	server = SimpleXMLRPCServer(('localhost', PORT), use_builtin_types=True, allow_none=True)
 
-	server.register_instance(Node('localhost:8000'))
+	ADDRESS = get_ip()
+	PORT = sys.argv[1]
+	TRACKER_ADDRESS = sys.argv[2]
+
+	# start XML-RPC server
+	server = SimpleXMLRPCServer((ADDRESS, int(PORT)), use_builtin_types=True, allow_none=True)
+
+	server.register_instance(Node(ADDRESS, PORT, TRACKER_ADDRESS))
 	print('Node running on localhost port ' + str(PORT))
 	try:
 		server.serve_forever()
