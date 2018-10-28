@@ -55,7 +55,6 @@ for i in range(n):
 def signal_handler(signal, frame):
     print('Shutting down...')
     sys.exit(0)
-    sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
 print('Nest running...')
