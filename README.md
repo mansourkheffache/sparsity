@@ -12,7 +12,7 @@ python3 tracker.py S X N T C
 Params:   
   S:  ID space for peers   
   X:  width of data/addresses   
-  N:  peer storage capacity
+  N:  peer storage capacity   
   T:  address/data hamming distance threshold    
   C:  ceiling for storage bins values  
   
