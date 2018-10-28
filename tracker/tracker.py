@@ -4,7 +4,24 @@
 import uuid
 import numpy as np
 from xmlrpc.server import SimpleXMLRPCServer
+import random
 import sys
+
+
+# GET IP ADDRESS
+import socket
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
+
 
 class Tracker():
 	# TODO watch for ids with trailing 0's
@@ -45,9 +62,11 @@ class Tracker():
 		for i in range(self.space):
 			matches = other_peers[distances == i]
 			try:
+
 				# FIX bad coding
-				neighbors[i] = self.active_peers[hex(matches[np.random.randint(len(matches))])[2:]]
-			except ValueError:
+				neighbors[i] = self.active_peers[hex(random.choice(matches))[2:]]				# slicing removes 0x from hex string
+
+			except IndexError:
 				# no matches, most likely
 				neighbors[i] = None
 
@@ -58,13 +77,22 @@ class Tracker():
 
 
 
+
+
 if __name__ == "__main__":
 
 	# start XML-RPC server
-	server = SimpleXMLRPCServer(('localhost', 8000), use_builtin_types=True, allow_none=True)
+	# QUESTION	maybe need to use ip and not localhost?
+	server = SimpleXMLRPCServer((get_ip(), 8000), use_builtin_types=True, allow_none=True)
 
-	server.register_instance(Tracker(20, 32, 20, 16, 5))
-	print('Tracker running on localhost port 8000')
+	S = int(sys.argv[1])
+	X = int(sys.argv[2])
+	N = int(sys.argv[3])
+	T = int(sys.argv[4])
+	C = int(sys.argv[5])
+
+	server.register_instance(Tracker(S, X, N, T, C))
+	print('Tracker running on ' + get_ip() + ' port 8000')
 	try:
 		server.serve_forever()
 	except KeyboardInterrupt:
