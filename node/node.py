@@ -10,8 +10,9 @@ from threading import Thread
 import socket
 import uuid
 
-# HACK
-import time
+import sqlite3
+import os
+
 
 # TODO side stuff to move to utils.py
 # just threads, but join() has a return value -- useful for this use case
@@ -33,7 +34,6 @@ class BThread(Thread):
 
 
 # GET IP ADDRESS AND PORT
-import socket
 def get_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -58,10 +58,6 @@ class Node:
 		# T:	threshold
 		# C:	bounds
 
-
-		# tmp fix without tracker
-		# self.neighbors = []
-		# self.id = uuid.uuid4().hex[:5]
 		self.ip = address
 		self.port = port
 		self.tracker = tracker
@@ -70,9 +66,29 @@ class Node:
 		self.join()
 
 		# init
-		self.bins = np.zeros((self.params['N'], self.params['X']), dtype=int)
-		self.addresses = np.random.randint(2, size=(self.params['N'], self.params['X']))
+		self._init_storage()
 
+		self.bins = np.zeros((self.params['N'], self.params['X']), dtype=int)
+		# self.addresses = np.random.randint(2, size=(self.params['N'], self.params['X']))
+
+
+	def _init_storage(self):
+		# init db
+		# TODO where should I delete?
+		# os.remove('./db/' + self.id + '.db')
+		conn = sqlite3.connect('db/' + self.id + '.db')
+		self.db_cursor = conn.cursor()
+		self.db_cursor.execute('CREATE TABLE bins(id INTEGER PRIMARY KEY AUTOINCREMENT, data BLOB)')
+
+		# generate addresses
+		self.addresses = np.random.randint(2, size=(self.params['N'], self.params['X']))
+		self.storage_addresses = [-1] * self.params['N']
+
+		zeros = np.zeros(shape=self.params['X'])
+
+		for i in range(self.params['N']):
+			self.db_cursor.execute("INSERT INTO bins(data) values(?)", (zeros.tobytes(),))
+			self.storage_addresses[i] = self.db_cursor.lastrowid
 
 
 
@@ -83,9 +99,21 @@ class Node:
 
 		# store data into designated locations	
 		bipolar_data = np.array(data, dtype=int) * 2 - 1
-		self.bins[locations] += bipolar_data
-		self.bins[self.bins < -self.params['C']] = -self.params['C']
-		self.bins[self.bins > self.params['C']] = self.params['C']
+
+		for l in locations:
+			# TODO parallelize?
+
+			# load bins
+			self.db_cursor.execute('SELECT * FROM bins WHERE id=?', (str(self.storage_addresses[l]),))
+			bins = np.copy(np.frombuffer(self.db_cursor.fetchone()[1], dtype=int))
+
+			# update bins
+			bins += bipolar_data
+			bins[bins < -self.params['C']] = -self.params['C']
+			bins[bins > self.params['C']] = self.params['C']
+
+			# store bins
+			self.db_cursor.execute('UPDATE bins SET data=? WHERE id=?', (bins.tobytes(), str(self.storage_addresses[l])))
 
 		return len(locations)
 
@@ -94,10 +122,16 @@ class Node:
 
 		# get matching locations
 		distances = np.count_nonzero(np.array(address, dtype=int) != self.addresses, axis=1)
-		locations = np.where(distances <= self.params['T'])
+		locations = np.where(distances <= self.params['T'])[0]
 
-		# get sum of bins
-		v = np.sum(self.bins[locations], axis=0)
+		v = np.zeros(shape=self.params['X'], dtype=int)
+		for l in locations:
+			# TODO parallelize?
+			# load bins
+			self.db_cursor.execute('SELECT * FROM bins WHERE id=?', (str(self.storage_addresses[l]),))
+			bins = np.copy(np.frombuffer(self.db_cursor.fetchone()[1], dtype=int))
+
+			v += bins
 
 		return v
 
@@ -231,6 +265,7 @@ class Node:
 		return 0
 
 	def connect(self):
+		print('>> Client connection')
 		return self.params['X']
 
 
