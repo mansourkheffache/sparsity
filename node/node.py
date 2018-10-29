@@ -31,23 +31,23 @@ class BThread(Thread):
         Thread.join(self)
         return self._return
 
-# GET IP ADDRESS
+
+# GET IP ADDRESS AND PORT
 import socket
-def get_ip():
+def get_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         # doesn't even have to be reachable
         s.connect(('10.255.255.255', 1))
         IP = s.getsockname()[0]
+        PORT = s.getsockname()[1]
     except:
         IP = '127.0.0.1'
+        PORT = 6969
     finally:
         s.close()
-    return IP
 
-
-
-
+    return IP, PORT
 
 
 class Node:
@@ -72,6 +72,8 @@ class Node:
 		# init
 		self.bins = np.zeros((self.params['N'], self.params['X']), dtype=int)
 		self.addresses = np.random.randint(2, size=(self.params['N'], self.params['X']))
+
+
 
 
 	def _set(self, data):
@@ -233,9 +235,8 @@ class Node:
 if __name__ == "__main__":
 
 
-	ADDRESS = get_ip()
-	PORT = sys.argv[1]
-	TRACKER_ADDRESS = sys.argv[2]
+	ADDRESS, PORT = get_address()
+	TRACKER_ADDRESS = sys.argv[1]
 
 	# start XML-RPC server
 	server = SimpleXMLRPCServer((ADDRESS, int(PORT)), use_builtin_types=True, allow_none=True)

@@ -11,23 +11,28 @@ from node import Node
 
 
 
-
-def get_ip():
+# GET IP ADDRESS AND PORT
+import socket
+def get_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         # doesn't even have to be reachable
         s.connect(('10.255.255.255', 1))
         IP = s.getsockname()[0]
+        PORT = s.getsockname()[1]
     except:
         IP = '127.0.0.1'
+        PORT = 6969
     finally:
         s.close()
-    return IP
+
+    return IP, PORT
 
 
-def spawn_node(port):
 
-	PORT = port
+def spawn_node():
+
+	ADDRESS, PORT = get_address()
 
 	# start XML-RPC server
 	server = SimpleXMLRPCServer((ADDRESS, int(PORT)), use_builtin_types=True, allow_none=True)
@@ -40,7 +45,6 @@ def spawn_node(port):
 
 # params
 n = int(sys.argv[1])
-ADDRESS = get_ip()
 TRACKER_ADDRESS = sys.argv[2]
 
 # container for processes
@@ -48,7 +52,7 @@ threads = []
 
 
 for i in range(n):
-	t = threading.Thread(target=spawn_node, args=(5000 + i,))
+	t = threading.Thread(target=spawn_node, args=())
 	threads.append(t)
 	t.start()
 
