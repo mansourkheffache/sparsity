@@ -57,12 +57,5 @@ for i in range(n):
 	t.start()
 
 
-
-def signal_handler(signal, frame):
-    print('Shutting down...')
-    sys.exit(0)
-
-signal.signal(signal.SIGINT, signal_handler)
 print('Nest running...')
-forever = threading.Event()
-forever.wait()
+
