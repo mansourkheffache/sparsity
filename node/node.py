@@ -230,6 +230,9 @@ class Node:
 
 		return 0
 
+	def connect(self):
+		return self.params['X']
+
 
 
 if __name__ == "__main__":
