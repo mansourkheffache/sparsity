@@ -37,6 +37,13 @@ class Tracker():
 
 		# create entry
 		hex_id = hex(np.random.randint(2**self.space))[2:]
+
+		# check for duplicates
+		while hex_id in self.active_peers:
+			print('-- duplicate ID')
+			hex_id = hex(np.random.randint(2**self.space))[2:]
+
+
 		peer_details = { 'ip': ip, 'port': port, 'id': hex_id }
 
 		neighbors = self.get_neighbors(hex_id)
