@@ -19,7 +19,7 @@ Params:
   
 (2) Then you can either start a single node manually, or a nest (which automatically starts an N number of nodes - starting from port 5000 by default)   
 ```
-python3 node.py IP PORT TRACKER-ADDR:PORT
+python3 node.py TRACKER-ADDR:PORT
 
 python3 nest.py N TRACKER-ADDR:PORT
 ```
