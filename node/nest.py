@@ -34,6 +34,15 @@ def get_address():
     return IP, PORT
 
 
+from pathlib import Path
+
+def fresh_start():
+	for p in Path("./db/").glob("*.db"):
+		p.unlink()
+	for p in Path("./db/").glob("*.db-journal"):
+		p.unlink()
+
+
 
 def spawn_node():
 
@@ -47,6 +56,8 @@ def spawn_node():
 
 	server.serve_forever()
 
+
+fresh_start()
 
 # params
 n = int(sys.argv[1])
