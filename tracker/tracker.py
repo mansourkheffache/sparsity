@@ -8,6 +8,12 @@ import random
 import sys
 
 
+import socketserver
+
+class ThreadedXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
+	pass
+	
+
 # GET IP ADDRESS
 import socket
 def get_ip():
@@ -90,7 +96,7 @@ if __name__ == "__main__":
 
 	# start XML-RPC server
 	# QUESTION	maybe need to use ip and not localhost?
-	server = SimpleXMLRPCServer((get_ip(), 8000), use_builtin_types=True, allow_none=True)
+	server = ThreadedXMLRPCServer((get_ip(), 8000), use_builtin_types=True, allow_none=True)
 
 	S = int(sys.argv[1])
 	X = int(sys.argv[2])

@@ -1,36 +1,37 @@
 #!/usr/bin/python3
 
-
 import numpy as np
 import xmlrpc.client
 import sys
 from xmlrpc.server import SimpleXMLRPCServer
-
 from threading import Thread
 import socket
 import uuid
-
 import sqlite3
 import os
+import socketserver
+
+class ThreadedXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
+	pass
 
 
 # TODO side stuff to move to utils.py
 # just threads, but join() has a return value -- useful for this use case
 
 # class used for multi-threading, might be neeed later
-class BThread(Thread):
-    def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, *, daemon=None):
-        Thread.__init__(self, group, target, name, args, kwargs, daemon=daemon)
+# class BThread(Thread):
+#     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, *, daemon=None):
+#         Thread.__init__(self, group, target, name, args, kwargs, daemon=daemon)
 
-        self._return = None
+#         self._return = None
 
-    def run(self):
-        if self._target is not None:
-            self._return = self._target(*self._args, **self._kwargs)
+#     def run(self):
+#         if self._target is not None:
+#             self._return = self._target(*self._args, **self._kwargs)
 
-    def join(self):
-        Thread.join(self)
-        return self._return
+#     def join(self):
+#         Thread.join(self)
+#         return self._return
 
 
 # GET IP ADDRESS AND PORT
@@ -53,11 +54,8 @@ def get_address():
 class Node:
 
 	def __init__(self, address, port, tracker):
-		# X:	dimensionality
-		# N:	number of addresses
-		# T:	threshold
-		# C:	bounds
 
+		# network info
 		self.ip = address
 		self.port = port
 		self.tracker = tracker
@@ -68,15 +66,12 @@ class Node:
 		# init
 		self._init_storage()
 
-		self.bins = np.zeros((self.params['N'], self.params['X']), dtype=int)
-		# self.addresses = np.random.randint(2, size=(self.params['N'], self.params['X']))
-
 
 	def _init_storage(self):
 		# init db
-		# TODO where should I delete?
+		# TODO where should I delete old dbs?
 		# os.remove('./db/' + self.id + '.db')
-		conn = sqlite3.connect('db/' + self.id + '.db')
+		conn = sqlite3.connect('db/' + self.id + '.db', check_same_thread=False)
 		self.db_cursor = conn.cursor()
 		self.db_cursor.execute('CREATE TABLE bins(id INTEGER PRIMARY KEY AUTOINCREMENT, data BLOB)')
 
@@ -135,6 +130,7 @@ class Node:
 
 		return v
 
+
 	def _get_recipients(self, origin):
 
 		# turn all to numpy world
@@ -177,6 +173,7 @@ class Node:
 
 
 		# !!! MULTI-THREADED !!!
+		# Aborted idea because of limitations on number of threads
 		# threads = []
 		# count = 0
 
@@ -218,33 +215,6 @@ class Node:
 	def retrieve(self, address, origin):
 		print('[' + self.id + '] RETRIEVE  --  ' + origin)
 
-		# !!! MULTI-THREADED !!!
-		# threads = []
-		# v = np.zeros(self.X, dtype=int)
-
-		# # local
-		# t = BThread(target=self._get, args=(address,))
-		# threads.append(t)
-		# t.start()
-
-		# # remote
-		# for r in self._get_recipients(origin):
-		# 	with xmlrpc.client.ServerProxy('http://' + r['ip'] + ':' + str(r['port']) + '/') as proxy:
-		# 		t = BThread(target=proxy.retrieve, args=(address, self.id))
-		# 		threads.append(t)
-		# 		t.start()
-
-
-
-		# # TODO do you need string encode/decode??
-		# # Nej
-
-		# # wait
-		# for t in threads:
-		# 	v += t.join()
-
-		# return v.tolist()
-
 		v = np.zeros(self.params['X'], dtype=int)
 
 		# local
@@ -271,7 +241,6 @@ class Node:
 
 
 if __name__ == "__main__":
-
 
 	ADDRESS, PORT = get_address()
 	TRACKER_ADDRESS = sys.argv[1]

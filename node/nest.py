@@ -7,12 +7,17 @@ import time
 import threading
 import socket
 from xmlrpc.server import SimpleXMLRPCServer
+
 from node import Node
 
 
+import socketserver
+
+class ThreadedXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
+	pass
+
 
 # GET IP ADDRESS AND PORT
-import socket
 def get_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -35,7 +40,7 @@ def spawn_node():
 	ADDRESS, PORT = get_address()
 
 	# start XML-RPC server
-	server = SimpleXMLRPCServer((ADDRESS, int(PORT)), use_builtin_types=True, allow_none=True)
+	server = ThreadedXMLRPCServer((ADDRESS, int(PORT)), use_builtin_types=True, allow_none=True)
 
 	server.register_instance(Node(ADDRESS, PORT, TRACKER_ADDRESS))
 	print('-- Node running on ' + ADDRESS + ':' + str(PORT))
