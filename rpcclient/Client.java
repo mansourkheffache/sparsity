@@ -8,7 +8,7 @@ import org.apache.xmlrpc.client.*;
 
 public class Client {
 
-    public static final String nodeEndpoint = "http://130.240.135.115:57103"; // getText()
+    public static final String nodeEndpoint = "http://130.240.135.12:56757"; // getText()
     public static final String fakeOriginAddress = "ffffffffffffffff"; // hardcoded leave it as it is!
     public static ArrayList<Integer> generatedData;
     public static int X;
@@ -22,36 +22,46 @@ public class Client {
         // int n = 32; // Dimensionality of the Data (Fancy Word: Hyperdimensional Vector) we will retrieve it from the nodes!
 
         // Connecting to Node
-        X = connectToNode(); // Wrapper for remote 'connect' method! I retrieve the width of the Data with this method as well!
-        System.out.println("The width of the data is " + X + " bits size long!");
-        generatedData = randomArrayList(X);
-        ArrayList<Integer> generatedData2 =randomArrayList(X);
-        java.util.List dataToStore = (List) generatedData ;
-        java.util.List dataToStore2 = (List) generatedData2 ;
-        System.out.println("Stored Data : " + dataToStore);
+        X = connectToNode();  //Dimensionality of the Data (Fancy Word: Hyperdimensional Vector) we will retrieve it from the nodes!
 
+        // Wrapper for remote 'connect' method! I retrieve the width of the Data with this method as well!
+        System.out.println("The width of the data is " + X + " bits size long!");
+        generatedData = generateData(X);
+        ArrayList<Integer> generatedData2 =generateData(X);
+        java.util.List dataToStore = (List) generatedData ;
+        //java.util.List dataToStore2 = (List) generatedData2 ;
+        System.out.println("Stored Data : " + dataToStore);
         Integer countStorageLocations;
 
 
         countStorageLocations =  storeData(dataToStore);
         System.out.println(" Data was stored in " + countStorageLocations + " different storage locations in the Hybrid P2P network!");
-        searchAndBrush(generatedData);
 
 
 
         // Storing data 20 times
-        //for(int i=0; i<20;i++)
-        //{
-        //countStorageLocations =  storeData(dataToStore); // wrapper for remote 'store' method!
-        //}
-        /*
+        for(int i=0; i<1;i++)
+        {
+            countStorageLocations =  storeData(dataToStore); // wrapper for remote 'store' method!
+            System.out.println("Iteration good " + i + " " + countStorageLocations);
+        }
+
         Integer countStorageLocations2 = null;
         // Storing other non-important data 10 times
-        for(int i=0; i<10;i++)
+
+
+        for(int i=0; i<100;i++)
         {
-            countStorageLocations2 =  storeData(dataToStore2); // wrapper for remote 'store' method!
+            countStorageLocations2 =  storeData(generateData(X)); // wrapper for remote 'store' method!
+            System.out.println("Iteration noise " + i + " " + countStorageLocations2);
         }
-        */
+        System.out.println("Unimportant Data was stored in " +  countStorageLocations2 + " different locations!");
+
+        System.out.println("Searching for Data Now! ");
+        //searchAndBrush(generatedData);
+        searchAndBrush(generatedData);
+
+
 
         //System.out.println(" Unimportant data was stored in " + countStorageLocations2 + " different storage locations in the network! ");
 
@@ -108,7 +118,7 @@ public class Client {
 
 
 
-    public static ArrayList<Integer> randomArrayList(int n)
+    public static ArrayList<Integer> generateData(int n)
     {
         ArrayList<Integer> list = new ArrayList<>();
         Random random = new Random();
@@ -187,13 +197,14 @@ public class Client {
 
     public static ArrayList<Integer> binarizeData(Integer[] retrievedValue)
     {
+
         ArrayList<Integer> binarizedData = new ArrayList<>();
         for (int i = 0; i < retrievedValue.length; i++)
         {
-            if(retrievedValue[i]>0)
-                binarizedData.add(i,1);
+            if(retrievedValue[i]>=0)
+                binarizedData.add(1);
             if(retrievedValue[i] < 0)
-                binarizedData.add(i,0);
+                binarizedData.add(0);
         }
         return binarizedData;
     }
@@ -216,12 +227,13 @@ public class Client {
     public static void searchAndBrush(ArrayList<Integer> currentData)
     {
         int numberOfIterations=1;
-        ArrayList<Integer>  newBinaryData = new ArrayList<Integer>(currentData);
+        ArrayList<Integer>  previousBinaryData;
         boolean isSearching =true;
+        ArrayList<Integer> currentBinaryData = new ArrayList<Integer>(currentData);
         while(isSearching)
         {
             System.out.println("Current Iteration " + numberOfIterations);
-            java.util.List currentInputData = (List) newBinaryData;
+            java.util.List currentInputData = (List) currentBinaryData;
 
             /*
             Integer currentStorageLocations =  storeData(currentInputData);
@@ -236,12 +248,19 @@ public class Client {
             }
             System.out.println("");
             System.out.println("Binarized Data equals to: ");
-            ArrayList<Integer> currentBinaryData = binarizeData(currentRetrievedData);
+
+
+            previousBinaryData  = new ArrayList<Integer>(currentBinaryData);
+            currentBinaryData = binarizeData(currentRetrievedData);
+
             for(int i = 0; i < currentBinaryData.size(); i++)
             {
                 System.out.print(currentBinaryData.get(i));
             }
-            int currentHammingDistance = dataComparison(currentBinaryData, generatedData);
+
+
+
+            int currentHammingDistance = dataComparison(currentBinaryData, previousBinaryData);
 
             System.out.println("");
             System.out.println("Current Hamming Distance is : " + currentHammingDistance);
@@ -254,6 +273,13 @@ public class Client {
                 {
                     System.out.print(currentBinaryData.get(i));
                 }
+                System.out.println(" \n Original Data:");
+                for(int i = 0; i < currentData.size(); i++)
+                {
+                    System.out.print(currentData.get(i));
+                }
+                int dataHammingDistance = dataComparison(currentData,currentBinaryData);
+                System.out.println(" \n Hamming distance between retrieved data and original one : " + dataHammingDistance);
                 break;
             }
             if( numberOfIterations > 15 && currentHammingDistance >= X/2)
@@ -262,7 +288,6 @@ public class Client {
                 isSearching = false;
                 break;
             }
-            newBinaryData = new ArrayList<Integer>(currentBinaryData);
             numberOfIterations++;
         }
     }
