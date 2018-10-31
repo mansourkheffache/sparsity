@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="gui.SparGUI">
+  <grid id="27dc6" binding="panelMain" layout-manager="GridLayoutManager" row-count="4" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="7" left="7" bottom="7" right="7"/>
+    <constraints>
+      <xy x="20" y="20" width="794" height="393"/>
+    </constraints>
+    <properties>
+      <background color="-15651007"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <component id="93cdc" class="javax.swing.JTextField" binding="nodeAddressField">
+        <constraints>
+          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="-1"/>
+          </grid>
+        </constraints>
+        <properties>
+          <text value=""/>
+        </properties>
+      </component>
+      <component id="a5648" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font name="Helvetica" style="1"/>
+          <foreground color="-11552353"/>
+          <text value="Address:"/>
+        </properties>
+      </component>
+      <component id="2dadc" class="javax.swing.JButton" binding="connectButton" default-binding="true">
+        <constraints>
+          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Connect"/>
+        </properties>
+      </component>
+      <component id="7b1f3" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font name="Helvetica" style="1"/>
+          <foreground color="-11552353"/>
+          <labelFor value="bb337"/>
+          <text value="Retrieve:"/>
+        </properties>
+      </component>
+      <component id="65e17" class="javax.swing.JButton" binding="searchButton" default-binding="true">
+        <constraints>
+          <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <autoscrolls value="true"/>
+          <background color="-1250068"/>
+          <text value="Search"/>
+        </properties>
+      </component>
+      <component id="e4c83" class="javax.swing.JTextField" binding="numberOfVectorsField">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="-1"/>
+          </grid>
+        </constraints>
+        <properties>
+          <text value=""/>
+        </properties>
+      </component>
+      <component id="3649e" class="javax.swing.JLabel" binding="sdlabel">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font name="Helvetica" style="1"/>
+          <foreground color="-11552353"/>
+          <text value="Number of Vectors"/>
+        </properties>
+      </component>
+      <component id="c3bf3" class="javax.swing.JButton" binding="generateAndStoreButton">
+        <constraints>
+          <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-1250068"/>
+          <borderPainted value="true"/>
+          <foreground color="-14869219"/>
+          <hideActionText value="false"/>
+          <text value="Generate and Store"/>
+        </properties>
+      </component>
+      <scrollpane id="9d37c">
+        <constraints>
+          <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="87805" class="javax.swing.JTextPane" binding="infoAreaPane">
+            <constraints/>
+            <properties>
+              <text value=""/>
+            </properties>
+          </component>
+        </children>
+      </scrollpane>
+      <component id="bb337" class="javax.swing.JTextField" binding="vectorToRetrieveField">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="-1"/>
+          </grid>
+        </constraints>
+        <properties>
+          <text value=""/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>
