@@ -29,7 +29,7 @@ public class SparGUI extends JFrame {
         connectButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!isConnected && finishedSearching && finishedStoring) {
+                if (finishedSearching && finishedStoring) {
                     String nodeNetworkAddress = nodeAddressField.getText();
                     client.init(nodeNetworkAddress);
                     dataWidth = client.connectToNode();
@@ -77,7 +77,7 @@ public class SparGUI extends JFrame {
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         JFrame frame = new JFrame("SparGUI");
         frame.setTitle("Mini Project Sparsity");
-        frame.setPreferredSize(new Dimension(1000, 500));
+        frame.setPreferredSize(new Dimension(1000, 800));
         frame.setContentPane(new SparGUI().panelMain);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
@@ -100,10 +100,10 @@ public class SparGUI extends JFrame {
      */
     private void $$$setupUI$$$() {
         panelMain = new JPanel();
-        panelMain.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(4, 4, new Insets(7, 7, 7, 7), -1, -1));
+        panelMain.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(4, 4, new Insets(60, 60, 60, 60), -1, -1));
         panelMain.setBackground(new Color(-15651007));
         nodeAddressField = new JTextField();
-        nodeAddressField.setText("");
+        nodeAddressField.setText("http://");
         panelMain.add(nodeAddressField, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JLabel label1 = new JLabel();
         Font label1Font = this.$$$getFont$$$("Helvetica", Font.BOLD, -1, label1.getFont());
@@ -144,6 +144,7 @@ public class SparGUI extends JFrame {
         final JScrollPane scrollPane1 = new JScrollPane();
         panelMain.add(scrollPane1, new com.intellij.uiDesigner.core.GridConstraints(3, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         infoAreaPane = new JTextPane();
+        infoAreaPane.setEditable(false);
         infoAreaPane.setText("");
         scrollPane1.setViewportView(infoAreaPane);
         vectorToRetrieveField = new JTextField();

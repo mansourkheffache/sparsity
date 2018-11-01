@@ -20,7 +20,7 @@ public class Client {
     public static int X;
     public JTextPane infoAreaPane;
     String outputFileName = "output.txt";
-    String requestedVector = "vector.txt";
+    String requestedVector = "foundVectors.txt";
     int dataHammingDistance;
 
     public Client(JTextPane infoAreaPane){
@@ -109,6 +109,11 @@ public class Client {
             Object[] paramsEmpty = new Object[]{};
             Object rawResponse = (Object) client.execute("connect", paramsEmpty);
             widthData = (Integer) rawResponse;
+
+            FileOutputStream out = new FileOutputStream(outputFileName, false);
+            out.close();
+
+
         }
         catch(Exception e)
         {
@@ -170,6 +175,19 @@ public class Client {
 
     public String searchAndBrush(ArrayList<Integer> currentData)
     {
+        try
+        {
+            FileOutputStream out = new FileOutputStream(requestedVector, false);
+            out.close();
+        }
+
+
+        catch(Exception e)
+        {
+            System.out.println(e.toString());
+        }
+
+
         StringBuilder sb = new StringBuilder();
         //int dataHammingDistance;
         boolean foundVector = false;
@@ -208,14 +226,16 @@ public class Client {
 
 
             int currentHammingDistance = dataComparison(currentBinaryData, previousBinaryData);
+            sb.append("Hamming Distance: " + currentHammingDistance + " in the " + numberOfIterations + "th Iteratrion. \n");
 
             System.out.println("");
             System.out.println("Current Hamming Distance is : " + currentHammingDistance);
             System.out.println("");
 
-            if(currentHammingDistance == 0 )
+            if( currentHammingDistance == 0 )
             {
                 foundVector = true;
+                isSearching = false;
                 System.out.println("Voilà! Here is the clean version of the data you requested! " );
                 for(int i = 0; i < currentBinaryData.size(); i++)
                 {
@@ -228,9 +248,10 @@ public class Client {
                 }
                 dataHammingDistance = dataComparison(currentData,currentBinaryData);
                 System.out.println(" \n Hamming distance between retrieved data and original one : " + dataHammingDistance);
+
                 break;
             }
-            if( numberOfIterations > 15 && currentHammingDistance >= X/2)
+            if( currentHammingDistance >= X/2)
             {
                 System.out.println("We couldn't find the data you requested! Désolè! Hamming Distance diverges to : " + currentHammingDistance);
                 isSearching = false;
@@ -239,16 +260,21 @@ public class Client {
             numberOfIterations++;
         }
 
-        writeToFile(requestedVector,currentBinaryData);
+
         if(foundVector)
         {
-
-            sb.append("We were able to find your data! with a Hamming Distance of : " );
+            writeToFile(requestedVector,currentBinaryData);
+            sb.append("\n\n\n We were able to find your data! with a Hamming Distance of : " );
             sb.append(dataHammingDistance);
+            sb.append(" compared to the original data. ");
+            sb.append(" Number of Iterations:  " + numberOfIterations);
+            sb.append("\r\n Check the foundVectors.txt file!");
         }
         if(!foundVector)
         {
-            sb.append("We couldn't find your data! The search query diverged!");
+            sb.append("\n\n\nWe couldn't find your data! The search query diverged.");
+            sb.append(" The search was terminated at the " + numberOfIterations + " iterations.");
+
         }
         return sb.toString();
     }
